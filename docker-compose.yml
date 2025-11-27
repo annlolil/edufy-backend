@@ -1,4 +1,99 @@
-FROM ubuntu:latest
-LABEL authors="heyit"
+services:
+  eureka:
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - services-network
+    restart: unless-stopped
 
-ENTRYPOINT ["top", "-b"]
+  gateway:
+    build:
+      context: ./edufy-gateway
+      dockerfile: Dockerfile
+    container_name: edufy-gateway
+    ports:
+      - "9090:9090"
+    networks:
+      - services-network
+    restart: unless-stopped
+
+  media-handling:
+    build:
+      context: ./media-handling
+      dockerfile: Dockerfile
+    container_name: media-handling
+    ports:
+      - "6767:6767"
+    networks:
+      - services-network
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    environment:
+      - DATABASE_URL=mysql://myuser:mypassword@mysql-server:3306/mediahandlingdb
+      - SPRING_PROFILES_ACTIVE=prod
+
+  media-player:
+    build:
+      context: ./media-player
+      dockerfile: Dockerfile
+    container_name: media-player
+    ports:
+      - "8084:8084"
+    networks:
+      - services-network
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    environment:
+      - DATABASE_URL=mysql://myuser:mypassword@mysql-server:3306/mediaplayerdb
+      - SPRING_PROFILES_ACTIVE=prod
+
+  recommendations:
+    build:
+      context: ./recommendations
+      dockerfile: Dockerfile
+    container_name: recommendations
+    ports:
+      - "8083:8083"
+    networks:
+      - services-network
+    restart: unless-stopped
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+
+  user-handling:
+    build:
+      context: ./user-handling/user-handling #testar
+      dockerfile: Dockerfile
+    container_name: user-handling
+    ports:
+      - "9595:9595"
+    networks:
+      - services-network
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-server
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: verysecret
+      MYSQL_USER: myuser
+      MYSQL_PASSWORD: mypassword
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    networks:
+      - services-network
+
+volumes:
+  mysql_data:
+networks:
+  services-network:

@@ -8,21 +8,27 @@ spring:
         webmvc:
           routes:
             - id: user-handling
-              uri: http://localhost:9595 #change later on to lb://microservice name matching eurekas registered name
+              uri: lb://userhandling #change later on to lb://microservice name matching eurekas registered name
               predicates:
                 - Path=/api/v1/userhandling/**
               filters:
                 - TokenRelay=
             - id: media-player
-              uri: http://localhost:8084 #change later on to lb://microservice name matching eurekas registered name
+              uri: lb://mediaplayer #change later on to lb://microservice name matching eurekas registered name
               predicates:
                 - Path=/api/v1/mediaplayer/**
               filters:
                 - TokenRelay=
             - id: media-handling
-              uri: http://localhost:6767
+              uri: lb://mediahandling
               predicates:
                 - Path=/api/v1/mediahandling/**
+              filters:
+                - TokenRelay=
+            - id: recommendations
+              uri: lb://recommendations #change later on to lb://microservice name matching eurekas registered name
+              predicates:
+                - Path=/api/v1/recommendations/**
               filters:
                 - TokenRelay=
   jwt:
@@ -51,10 +57,18 @@ spring:
 
 # change the name later on from localhost to eurekas containername
 # Note from Leo: Will throw a TransportException if not also running the Eureka Server. Gateway still works.
+
+# Through docker-compose.yml
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://eureka-server:8761/eureka/
+
+# Locally
+#eureka:
+#  client:
+#    service-url:
+#      defaultZone: http://localhost:8761/eureka/
 
 server:
   port: 9090
