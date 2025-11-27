@@ -8,19 +8,19 @@ spring:
         webmvc:
           routes:
             - id: user-handling
-              uri: lb://userhandling #change later on to lb://microservice name matching eurekas registered name
+              uri: lb://user-handling #change later on to lb://microservice name matching eurekas registered name
               predicates:
                 - Path=/api/v1/userhandling/**
               filters:
                 - TokenRelay=
             - id: media-player
-              uri: lb://mediaplayer #change later on to lb://microservice name matching eurekas registered name
+              uri: lb://media-player #change later on to lb://microservice name matching eurekas registered name
               predicates:
                 - Path=/api/v1/mediaplayer/**
               filters:
                 - TokenRelay=
             - id: media-handling
-              uri: lb://mediahandling
+              uri: lb://media-handling
               predicates:
                 - Path=/api/v1/mediahandling/**
               filters:
