@@ -1,0 +1,60 @@
+spring:
+  application:
+    name: edufy-gateway
+
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          routes:
+            - id: user-handling
+              uri: http://localhost:9595 #change later on to lb://microservice name matching eurekas registered name
+              predicates:
+                - Path=/api/v1/userhandling/**
+              filters:
+                - TokenRelay=
+            - id: media-player
+              uri: http://localhost:8084 #change later on to lb://microservice name matching eurekas registered name
+              predicates:
+                - Path=/api/v1/mediaplayer/**
+              filters:
+                - TokenRelay=
+            - id: media-handling
+              uri: http://localhost:6767
+              predicates:
+                - Path=/api/v1/mediahandling/**
+              filters:
+                - TokenRelay=
+  jwt:
+    auth:
+      converter:
+        resource-id: edufy
+        principal-attribute: preferred_username
+
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak:
+            issuer-uri: http://81.231.105.129:8084/realms/edufyrealm
+            authorization-uri: http://81.231.105.129:8084/realms/edufyrealm/protocol/openid-connect/auth
+            token-uri: http://81.231.105.129:8084/realms/edufyrealm/protocol/openid-connect/token
+            user-info-uri: http://81.231.105.129:8084/realms/edufyrealm/protocol/openid-connect/userinfo
+            jwk-set-uri: http://81.231.105.129:8084/realms/edufyrealm/protocol/openid-connect/certs
+        registration:
+          keycloak:
+            client-id: edufy
+            client-secret: DzyRVOzaiLftCsAJIzpbP3SZmrsaPD3x
+            authorization-grant-type: authorization_code
+            scope: openid, profile, email
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+
+# change the name later on from localhost to eurekas containername
+# Note from Leo: Will throw a TransportException if not also running the Eureka Server. Gateway still works.
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+server:
+  port: 9090
